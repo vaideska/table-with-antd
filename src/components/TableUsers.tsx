@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Space,
     Table,
@@ -15,6 +15,7 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import cls from './TableUsers.module.css';
 import dayjs, { Dayjs } from 'dayjs';
+import useModal from 'antd/es/modal/useModal';
 
 interface DataType {
     key: string;
@@ -49,6 +50,7 @@ const data: DataType[] = [
 ];
 
 interface FormType {
+    key?: React.Key
     name: string;
     count: number;
     date: Dayjs
@@ -59,28 +61,42 @@ const TableUsers: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm<FormType>();
 
-    console.log(users);
-
     const showModal = () => {
         setIsModalOpen(true);
     };
 
     const handleOk = (values: FormType) => {
         setIsModalOpen(false);
-        console.log('cool', values);
+        form.resetFields();
 
-        const { name, count, date } = values;
-        setUsers((prev) => [{
-            key: _.uniqueId(),
-            name,
-            count,
-            date,
-            dateString: date.format("DD.MM.YYYY").toString(),
-        }, ...prev]);
+        const { key, name, count, date } = values;
+
+        if (key) {
+            setUsers((prev) => prev.map(
+                (user) => user.key === key ?
+                    {
+                        key,
+                        name,
+                        count,
+                        date, dateString: date.format("DD.MM.YYYY").toString()
+                    }
+                    : user
+            ))
+        } else {
+            setUsers((prev) => [{
+                key: _.uniqueId(),
+                name,
+                count,
+                date,
+                dateString: date.format("DD.MM.YYYY").toString(),
+            }, ...prev]);
+        }
+
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
+        form.resetFields();
     };
 
     const columns: ColumnsType<DataType> = [
@@ -107,7 +123,7 @@ const TableUsers: React.FC = () => {
             key: 'action',
             render: (_, record) => (
                 <Space size="middle">
-                    <Button type="default" icon={<EditOutlined />} />
+                    <Button type="default" icon={<EditOutlined />} onClick={() => handleEdit(record)} />
                     <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
                         <Button type="default" icon={<DeleteOutlined />} />
                     </Popconfirm>
@@ -117,9 +133,15 @@ const TableUsers: React.FC = () => {
     ];
 
     const handleDelete = (key: React.Key) => {
-        console.log('delete ' + key);
         setUsers(prev => prev.filter(user => user.key !== key));
     };
+
+    const handleEdit = (record: DataType) => {
+        console.log(record);
+        setIsModalOpen(true);
+
+        form.setFieldsValue({ ...record });
+    }
 
     return (
         <>
@@ -131,7 +153,7 @@ const TableUsers: React.FC = () => {
                 open={isModalOpen}
                 onOk={form.submit}
                 onCancel={handleCancel}
-                destroyOnClose={true}
+                forceRender={true}
             >
                 <Form
                     form={form}
@@ -142,6 +164,13 @@ const TableUsers: React.FC = () => {
                     preserve={false}
                     onFinish={handleOk}
                 >
+                    <Form.Item
+                        label=""
+                        name="key"
+                        hidden={true}
+                    >
+                        <Input />
+                    </Form.Item>
                     <Form.Item
                         label="Name"
                         name="name"
