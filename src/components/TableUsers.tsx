@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Space,
     Table,
@@ -15,7 +15,7 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import _ from 'lodash';
 import cls from './TableUsers.module.css';
 import dayjs, { Dayjs } from 'dayjs';
-import useModal from 'antd/es/modal/useModal';
+import Search from 'antd/es/input/Search';
 
 interface DataType {
     key: string;
@@ -58,6 +58,7 @@ interface FormType {
 
 const TableUsers: React.FC = () => {
     const [users, setUsers] = useState<DataType[]>(data);
+    const [filter, setFilter] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm<FormType>();
 
@@ -143,11 +144,40 @@ const TableUsers: React.FC = () => {
         form.setFieldsValue({ ...record });
     }
 
+    const onFilter = (data: DataType[], value: string) => {
+        if (value.length === 0) {
+            return data;
+        } else {
+            const result = data.filter((user) => {
+                return _.includes(`${user.name} ${user.dateString} ${String(user.count)}`.toUpperCase(), value.toUpperCase());
+            });
+            return result;
+        }
+    }
+
+    const onSearch = (value: string) => {
+        setFilter(value);
+    }
+
+    const renderUsers = onFilter(users, filter);
+
     return (
         <>
-            <Button className={cls.button_modal} type="primary" onClick={showModal}>
-                Добавить
-            </Button>
+            <Space>
+                <Button
+                    className={cls.button_modal}
+                    type="primary"
+                    onClick={showModal}
+                >
+                    Добавить
+                </Button>
+                <Search
+                    placeholder="input search text"
+                    allowClear
+                    onSearch={onSearch}
+                />
+            </Space>
+
             <Modal
                 title="Basic Modal"
                 open={isModalOpen}
@@ -196,7 +226,7 @@ const TableUsers: React.FC = () => {
 
                 </Form>
             </Modal>
-            <Table columns={columns} dataSource={users} />
+            <Table columns={columns} dataSource={renderUsers} />
         </>
 
     )
