@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/table-with-antd/static/css/main.deb277db.css",
+    "main.js": "/table-with-antd/static/js/main.39076ad3.js",
+    "index.html": "/table-with-antd/index.html",
+    "main.deb277db.css.map": "/table-with-antd/static/css/main.deb277db.css.map",
+    "main.39076ad3.js.map": "/table-with-antd/static/js/main.39076ad3.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.deb277db.css",
+    "static/js/main.39076ad3.js"
+  ]
+}
